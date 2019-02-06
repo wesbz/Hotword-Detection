@@ -64,11 +64,3 @@ for file in os.listdir('../speech_commands/_background_noise_'):
     if file.endswith(".wav"):
         filename = os.path.splitext(file)[0]
         noises[filename] = samples.astype(float) / np.iinfo(samples.dtype).max
-
-
-noises = {  "doing_the_dishes": wavfile.read('../speech_commands/_background_noise_/doing_the_dishes.wav')[1].astype(float) / np.iinfo(np.int16).max,
-            "dude_miaowing": wavfile.read('../speech_commands/_background_noise_/dude_miaowing.wav')[1].astype(float) / np.iinfo(),
-            "exercise_bike": wavfile.read('../speech_commands/_background_noise_/exercise_bike.wav')[1].astype(float) / np.iinfo(),
-            "pink_noise": wavfile.read('../speech_commands/_background_noise_/pink_noise.wav')[1].astype(float) / np.iinfo(),
-            "running_tap": wavfile.read('../speech_commands/_background_noise_/running_tap.wav')[1].astype(float) / np.iinfo(),
-            "white_noise": wavfile.read('../speech_commands/_background_noise_/white_noise.wav')[1].astype(float) / np.iinfo() }

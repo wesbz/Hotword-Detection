@@ -17,7 +17,7 @@ class Listener:
         pa = pyaudio.PyAudio()
 
         def callback(in_data, frame_count, time_info, flag):
-            audio_data = np.fromstring(in_data, dtype=np.float32)
+            audio_data = np.fromstring(in_data, dtype=np.int16)
             # Instead of printing, process here the audio chunk 'audio_data' with libROSA
             # [...]
             print(audio_data)
