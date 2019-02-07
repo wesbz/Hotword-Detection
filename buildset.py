@@ -1,20 +1,38 @@
 import librosa
-import librosa.display
-import matplotlib.pyplot as plt
-import numpy as np
 import os
-import csv
+from tqdm import tqdm
+import preprocess
+import torch.utils.data as utils
 
-import pyaudio
-import wave
-import pandas as pd
+SAMPLING_DURATION = 16000
+
+def build_dataset():
+
+    dataset = []
+    audio_preproc = preprocess.AudioPreprocessor()
+
+    for folder in tqdm(next(os.walk('../speech_commands/'))[1]):
+        tmp = []
+
+        if folder != "_background_noise_":
+
+            commande = int(folder in ["one","two","three"])
+
+            for filename in tqdm(os.listdir('../speech_commands/'+folder)):
+                
+                y, _ = librosa.load(os.path.join("../speech_commands/"+folder+"/"+filename), sr=None)
+
+                if len(y) < SAMPLING_DURATION:
+                    y = audio_preproc.pad_short_data(y, up_to=SAMPLING_DURATION, padding='zeros')
+
+                S = audio_preproc.compute_mfccs(y)
+
+                tmp.append([S, commande])
+            dataset.append(tmp)
+
+    return dataset
+
+ds = build_dataset()
 
 
-df = pd.read_csv('corpus_round.csv', header=None)
-
-
-print(df.count)
-
-ds = df.sample(frac=1)
-
-ds.to_csv('corpus_rand.csv')
+def split(dataset, train_prop, val_prop, test_prop):
