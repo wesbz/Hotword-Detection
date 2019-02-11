@@ -47,7 +47,17 @@ class AudioPreprocessor(object):
         return S
 
 
-    def pad_short_data(self, data, up_to=16000, padding='zeros', factor=0.1):
+    def pad_short_data(self, data, up_to=16000):
+        p = np.zeros(up_to)
+
+        offset = np.random.randint(up_to - len(data))
+
+        p[offset:offset+len(data)] += data
+
+        return p
+
+
+    def noise(self, data, up_to=16000, padding='zeros', factor=0.1):
         """
         padding : method to use to fill the data with.
                 -'zeros' : fill with zeros
@@ -61,12 +71,12 @@ class AudioPreprocessor(object):
         if padding == 'zeros':
             p = np.zeros(up_to)
         elif padding in self.noises:
-            noise_offset = np.random.randint(len(self.noises[padding])-up_to)
+            noise_offset = np.random.randint(len(self.noises[padding]) - up_to + 1)
             p = self.noises[padding][noise_offset:noise_offset+up_to]
         else:
             raise ValueError('wrong type of padding.')
 
-        offset = np.random.randint(up_to - len(data))
+        offset = np.random.randint(up_to - len(data) + 1)
 
         p *= factor
         p[offset:offset+len(data)] += data
