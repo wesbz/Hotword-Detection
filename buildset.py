@@ -19,6 +19,7 @@ def build_dataset():
     for folder in tqdm(next(os.walk('../speech_commands/'))[1]):
         tmp = []
         tmp_append = tmp.append
+        speakers = {}
 
         if folder != "_background_noise_":
 
@@ -26,6 +27,10 @@ def build_dataset():
 
             for filename in tqdm(os.listdir('../speech_commands/'+folder)):
 
+                if not commande:
+                    prob_skip = np.random.rand()
+                    if prob_skip > 0.2:
+                        continue
                 y, _ = librosa_load(os_path_join("../speech_commands/"+folder+"/"+filename), sr=None)
 
                 if len(y) < SAMPLING_DURATION:
