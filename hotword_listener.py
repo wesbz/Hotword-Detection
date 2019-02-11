@@ -7,39 +7,57 @@ import librosa
 import librosa.display
 import numpy as np
 import torch.utils.data as utils
+from nnet import CNNTradPool1Conv1
+from nnet import CNNTradPool1Conv2
+from nnet import CNNTradPool1Conv3
 
 
-path_1_conv = "models/model_one_convolution"
-path_3_conv = "models/model_three_convolutions"
+#path of the trained models
+path_cnntp_1conv = 'models/CNNTradPool1/one_convo_reduced_dataset_40MFCC'
+path_cnntp_2conv = 'models/CNNTradPool1/two_convo_reduced_dataset_40MFCC'
+path_cnntp_3conv = 'models/CNNTradPool1/three_convo_reduced_dataset_40MFCC'
 
 #create an instance of the Neural Network
-net = MyConvolutionalNetwork()
-#load the trained model of the NN
-net.load_state_dict(torch.load(path_1_conv, map_location='cpu'))
+netCNNTradPool1Conv1 = CNNTradPool1Conv1()
+netCNNTradPool1Conv2 = CNNTradPool1Conv2()
+netCNNTradPool1Conv3 = CNNTradPool1Conv3()
 
-path_file_to_test = "recordings/recording-2019-02-07-16-38-20.wav"
-path_one = 'data/corpus_test/one/0a2b400e_nohash_0.wav'
-path_happy = 'data/corpus_test/happy/0a5636ca_nohash_0.wav'
-path_happy = 'data/corpus_test/happy/0a5636ca_nohash_0.wav'
+#load the trained model of the NN
+netCNNTradPool1Conv1.load_state_dict(torch.load(path_cnntp_1conv, map_location='cpu'))
+net = netCNNTradPool1Conv1
+netCNNTradPool1Conv2.load_state_dict(torch.load(path_cnntp_2conv, map_location='cpu'))
+netCNNTradPool1Conv3.load_state_dict(torch.load(path_cnntp_3conv, map_location='cpu'))
+
+#choose the net to be tested
+# choose between :
+# - netCNNTradPool1Conv1
+# - netCNNTradPool1Conv2
+# - netCNNTradPool1Conv3
+
+net = netCNNTradPool1Conv3
 
 batch_size = 64
-size_mffc = 101 #44
+size_mffc = 101 
 
 def resize_mfcc(mfcc):
-    #print('size mfcc[0] : ', len(mfcc[0]))
     mfcc2 = []
     missing = size_mffc - len(mfcc[0])
     if missing > 0:
         for i in range(len(mfcc)):
             mfcc2.append(np.append(mfcc[i], np.zeros(missing)))
         mfcc = np.array(mfcc2)
-    #print('size mfcc[0] : ', len(mfcc[0]))
     return mfcc 
+
+def predict(net, path_file):
+    pred = test_file(net, path_file)
+    if pred:
+        print('hotword detected')
+    else:
+        print('not a hotword')
 
 def test_file(net, path_file):
     y, sr = librosa.load(path_file, None)
-    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20, n_fft = 480, hop_length = 160, fmin = 20, fmax = 4000)
-
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40, n_fft = 480, hop_length = 160, fmin = 20, fmax = 4000)
 
     mfcc = resize_mfcc(mfcc)
 
@@ -64,7 +82,7 @@ timestamp = '{:%Y-%m-%d-%H-%M-%S}'.format(datetime.datetime.now())
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
-RATE = 16000 #22050
+RATE = 16000 
 CHUNK = 1024
 RECORD_SECONDS = 1
 WAVE_OUTPUT_FILENAME = "recordings/recording-"+ timestamp+ ".wav"
@@ -89,6 +107,7 @@ stream.stop_stream()
 stream.close()
 audio.terminate()
  
+# save the audio file
 waveFile = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
 waveFile.setnchannels(CHANNELS)
 waveFile.setsampwidth(audio.get_sample_size(FORMAT))
@@ -96,20 +115,5 @@ waveFile.setframerate(RATE)
 waveFile.writeframes(b''.join(frames))
 waveFile.close()
 
-
-
-
-def predict(net, path_file):
-    pred = test_file(net, path_file)
-    if pred:
-        print('hotword detected')
-    else:
-        print('not a hotword')
-
-#predict(net, WAVE_OUTPUT_FILENAME)
-
-
-print('One')
-predict(net, path_one)
-#print('Happy')
-#predict(net, path_happy)
+# launch a prediction on the new recorded audio file
+predict(net, WAVE_OUTPUT_FILENAME)
