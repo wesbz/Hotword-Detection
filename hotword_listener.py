@@ -1,6 +1,5 @@
 import pyaudio
 import wave
-from network import MyConvolutionalNetwork
 import torch
 import datetime
 import librosa
@@ -44,7 +43,7 @@ netCNNTradPool1Conv3.load_state_dict(torch.load(path_cnntp_3conv, map_location='
 net = netCNNTradPool1Conv3
 
 batch_size = 64
-size_mffc = 101 
+size_mffc = 101
 
 def resize_mfcc(mfcc):
     mfcc2 = []
@@ -53,7 +52,7 @@ def resize_mfcc(mfcc):
         for i in range(len(mfcc)):
             mfcc2.append(np.append(mfcc[i], np.zeros(missing)))
         mfcc = np.array(mfcc2)
-    return mfcc 
+    return mfcc
 
 def predict(net, path_file):
     if net == netFirstConvolutionalNetwork:
@@ -74,10 +73,10 @@ def test_file(net, path_file):
     test_set_list = []
     for _ in range(batch_size):
         test_set_list.append(mfcc)
-    test_set = np.array(test_set_list) 
+    test_set = np.array(test_set_list)
 
-    my_x = [x for x in test_set] 
-    tensor_x = torch.stack([torch.Tensor(i) for i in my_x]) 
+    my_x = [x for x in test_set]
+    tensor_x = torch.stack([torch.Tensor(i) for i in my_x])
 
     output_net = net(tensor_x)
     print(output_net[0])
@@ -97,10 +96,10 @@ def test_file_first(net, path_file):
     test_set_list = []
     for _ in range(batch_size):
         test_set_list.append(mfcc)
-    test_set = np.array(test_set_list) 
+    test_set = np.array(test_set_list)
 
-    my_x = [x for x in test_set] 
-    tensor_x = torch.stack([torch.Tensor(i) for i in my_x]) 
+    my_x = [x for x in test_set]
+    tensor_x = torch.stack([torch.Tensor(i) for i in my_x])
 
     output_net = net(tensor_x)
     print(output_net[0])
@@ -115,39 +114,39 @@ timestamp = '{:%Y-%m-%d-%H-%M-%S}'.format(datetime.datetime.now())
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
-RATE = 16000 
+RATE = 16000
 CHUNK = 1024
 RECORD_SECONDS = 1
 WAVE_OUTPUT_FILENAME = "recordings/recording-"+ timestamp+ ".wav"
- 
+
 
 if net == netFirstConvolutionalNetwork:
     batch_size = 4
-    size_mffc = 44 
-    RATE  = 1024    
+    size_mffc = 44
+    RATE  = 1024
 
 
 
 audio = pyaudio.PyAudio()
- 
+
 # start Recording
 stream = audio.open(format=FORMAT, channels=CHANNELS,
                 rate=RATE, input=True,
                 frames_per_buffer=CHUNK)
 print("recording...")
 frames = []
- 
+
 for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
     data = stream.read(CHUNK)
     frames.append(data)
 print("finished recording")
- 
- 
+
+
 # stop Recording
 stream.stop_stream()
 stream.close()
 audio.terminate()
- 
+
 # save the audio file
 waveFile = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
 waveFile.setnchannels(CHANNELS)
