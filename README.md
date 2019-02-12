@@ -13,7 +13,7 @@ buildset.py réorganise aléatoirement les lignes du fichier csv et créé alors
 
 ## Script de test
 
-pour Effectuer un test avec micro, executer :
+Pour effectuer un test avec micro, executer :
 
     $ python3 hotword_listener.py 
 
