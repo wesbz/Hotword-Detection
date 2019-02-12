@@ -15,9 +15,11 @@ buildset.py réorganise aléatoirement les lignes du fichier csv et créé alors
 
 pour Effectuer un test avec micro, executer :
 
-.. code:: sh 
-    $ python3 hotword_listener.py
+    $ python3 hotword_listener.py 
 
 Cela va charger les modèles entrainés, et lancer un enregistrement d'une seconde (cf indiation dans le terminal) et répondre à l'utilisateur dans le terminal : "hotword detected" ou "not a hotword"
 
 Il est possible en changeant le code de choisir quel réseau est utilisé (1, 2 ou 3 convolutions)
+
+
+
