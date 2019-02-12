@@ -30,9 +30,9 @@ netCNNTradPool1Conv3.load_state_dict(torch.load(path_cnntp_3conv, map_location='
 
 #choose the net to be tested
 # choose between :
-# - netCNNTradPool1Conv1
-# - netCNNTradPool1Conv2
-# - netCNNTradPool1Conv3
+# - net = netCNNTradPool1Conv1
+# - net = netCNNTradPool1Conv2
+# - net = netCNNTradPool1Conv3
 
 net = netCNNTradPool1Conv3
 
