@@ -4,6 +4,47 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import torch
 
+
+class FirstConvolutionalNetwork(nn.Module):
+    def __init__(self):
+        super(FirstConvolutionalNetwork, self).__init__()
+        
+        self.conv1 = nn.Conv1d(10, 16, kernel_size=3, stride=1, padding=1)
+        
+        self.flattened_size = 176*4
+        
+        self.fc1 = nn.Linear(self.flattened_size, 64)
+        self.fc2 = nn.Linear(64, 1)
+        self.fc3 = nn.Sigmoid()
+
+    def forward(self, x):
+        """
+        Forward pass,
+        x shape is (batch_size, 3, 32, 32)
+        (color channel first)
+        in the comments, we omit the batch_size in the shape
+        """
+        # shape : 3x32x32 -> 18x32x32
+        x = F.relu(self.conv1(x))
+        # 18x32x32 -> 18x16x16
+  
+        
+        # Check the output size
+        output_size = np.prod(x.size()[1:])
+        assert output_size == self.flattened_size,\
+                "self.flattened_size is invalid {} != {}".format(output_size, self.flattened_size)
+        
+        # 18x16x16 -> 4608
+        x = x.view(-1, self.flattened_size)
+        # 4608 -> 64
+        x = F.relu(self.fc1(x))
+        # 64 -> 10
+        x = self.fc2(x)
+        
+        x = self.fc3(x)
+    
+        return x
+
 class CNNTradPool1Conv1(nn.Module):
     def __init__(self):
         super(CNNTradPool1Conv1, self).__init__()

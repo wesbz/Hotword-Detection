@@ -7,29 +7,36 @@ import librosa
 import librosa.display
 import numpy as np
 import torch.utils.data as utils
+
+from nnet import FirstConvolutionalNetwork
 from nnet import CNNTradPool1Conv1
 from nnet import CNNTradPool1Conv2
 from nnet import CNNTradPool1Conv3
 
 
 #path of the trained models
+path_first_net_model = '/Users/gabrieldittrick/CSWORK/MLWORK/AIC_OPT12/Hotword-Detection/models/model_one_convolution_old'
 path_cnntp_1conv = 'models/CNNTradPool1/one_convo_reduced_dataset_40MFCC'
 path_cnntp_2conv = 'models/CNNTradPool1/two_convo_reduced_dataset_40MFCC'
 path_cnntp_3conv = 'models/CNNTradPool1/three_convo_reduced_dataset_40MFCC'
 
+
 #create an instance of the Neural Network
+netFirstConvolutionalNetwork = FirstConvolutionalNetwork()
 netCNNTradPool1Conv1 = CNNTradPool1Conv1()
 netCNNTradPool1Conv2 = CNNTradPool1Conv2()
 netCNNTradPool1Conv3 = CNNTradPool1Conv3()
 
 #load the trained model of the NN
+netFirstConvolutionalNetwork.load_state_dict(torch.load(path_first_net_model, map_location='cpu'))
 netCNNTradPool1Conv1.load_state_dict(torch.load(path_cnntp_1conv, map_location='cpu'))
-net = netCNNTradPool1Conv1
 netCNNTradPool1Conv2.load_state_dict(torch.load(path_cnntp_2conv, map_location='cpu'))
 netCNNTradPool1Conv3.load_state_dict(torch.load(path_cnntp_3conv, map_location='cpu'))
 
 #choose the net to be tested
 # choose between :
+
+# - net = netFirstConvolutionalNetwork
 # - net = netCNNTradPool1Conv1
 # - net = netCNNTradPool1Conv2
 # - net = netCNNTradPool1Conv3
@@ -49,7 +56,10 @@ def resize_mfcc(mfcc):
     return mfcc 
 
 def predict(net, path_file):
-    pred = test_file(net, path_file)
+    if net == netFirstConvolutionalNetwork:
+        pred = test_file_first(net, path_file)
+    else:
+        pred = test_file(net, path_file)
     if pred:
         print('hotword detected')
     else:
@@ -58,6 +68,29 @@ def predict(net, path_file):
 def test_file(net, path_file):
     y, sr = librosa.load(path_file, None)
     mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40, n_fft = 480, hop_length = 160, fmin = 20, fmax = 4000)
+
+    mfcc = resize_mfcc(mfcc)
+
+    test_set_list = []
+    for _ in range(batch_size):
+        test_set_list.append(mfcc)
+    test_set = np.array(test_set_list) 
+
+    my_x = [x for x in test_set] 
+    tensor_x = torch.stack([torch.Tensor(i) for i in my_x]) 
+
+    output_net = net(tensor_x)
+    print(output_net[0])
+    if output_net[0] > 0.5:
+        prediction = True
+    else:
+        prediction = False
+    return prediction
+
+def test_file_first(net, path_file):
+    y, sr = librosa.load(path_file, None)
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=10)
+
 
     mfcc = resize_mfcc(mfcc)
 
@@ -87,6 +120,14 @@ CHUNK = 1024
 RECORD_SECONDS = 1
 WAVE_OUTPUT_FILENAME = "recordings/recording-"+ timestamp+ ".wav"
  
+
+if net == netFirstConvolutionalNetwork:
+    batch_size = 4
+    size_mffc = 44 
+    RATE  = 1024    
+
+
+
 audio = pyaudio.PyAudio()
  
 # start Recording
